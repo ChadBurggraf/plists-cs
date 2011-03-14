@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestRunConfiguration name="Local Test Run" id="4c6ea626-eb6d-4822-a3c7-905de6cf1311" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <Description>This is a default test run configuration for a local test run.</Description>
+  <Deployment>
+    <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Nested.plist" />
+    <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Calculator.plist" />
+    <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Types.plist" />
+  </Deployment>
+  <TestTypeSpecific />
+</TestRunConfiguration>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <BuildDir>$(MSBuildProjectDirectory)\Build</BuildDir>
+    <KeyFile>$(MSBuildProjectDirectory)\Source\System.Runtime.Serialization.Plists.snk</KeyFile>
+    <LibraryDir>$(MSBuildProjectDirectory)\Source\System.Runtime.Serialization.Plists</LibraryDir>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="Exists('$(KeyFile)')">
+      <PropertyGroup>
+        <KeyFileArgs>/keyfile:"$(KeyFile)"</KeyFileArgs>
+        <SignAssembly>true</SignAssembly>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SignAssembly>false</SignAssembly>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <ItemGroup>
+    <Projects Include="$(LibraryDir)\System.Runtime.Serialization.Plists.csproj"/>
+  </ItemGroup>
+
+  <Target Name="Build" DependsOnTargets="Clean">
+    <MakeDir Directories="$(BuildDir)"/>
+    <MSBuild Projects="@(Projects)" Properties="Configuration=$(Configuration);SignAssembly=$(SignAssembly);AssemblyOriginatorKeyFile=$(KeyFile)"/>
+
+    <ItemGroup>
+      <ReleaseFiles Include="$(LibraryDir)\bin\$(Configuration)\System.Runtime.Serialization.Plists.dll"/>
+      <ReleaseFiles Include="$(LibraryDir)\bin\$(Configuration)\System.Runtime.Serialization.Plists.pdb"/>
+      <ReleaseFiles Include="$(LibraryDir)\bin\$(Configuration)\System.Runtime.Serialization.Plists.xml"/>
+      <ReleaseFiles Include="$(MSBuildProjectDirectory)\LICENSE.txt"/>
+      <ReleaseFiles Include="$(MSBuildProjectDirectory)\README.md"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ReleaseFiles)" DestinationFolder="$(BuildDir)"/>
+  </Target>
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(BuildDir)"/>
+    <MSBuild Projects="@(Projects)" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+  </Target>
+</Project>

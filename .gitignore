@@ -1,0 +1,8 @@
+*.csproj.user
+*.suo
+*.snk
+StyleCop.Cache
+bin/
+obj/
+Build/
+TestResults/
