@@ -120,8 +120,6 @@ namespace System.Runtime.Serialization.Plists
 
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
-                long baseOffset = stream.Position;
-
                 // Write the header.
                 writer.Write(HeaderMagicNumber.ToBigEndianConditional());
                 writer.Write(HeaderVersionNumber.ToBigEndianConditional());
@@ -130,18 +128,16 @@ namespace System.Runtime.Serialization.Plists
                 this.topLevelObjectOffset = 8;
                 this.offsetIntSize = ByteSizeForRefCount(this.offsetTable.Count);
                 this.objectRefSize = ByteSizeForRefCount(this.objectTable.Count);
-                this.WriteObjectTable(writer);
+                long offsetTableOffset = this.topLevelObjectOffset + this.WriteObjectTable(writer);
 
                 // Write the offset table.
-                long offsetTableOffset = stream.Position - baseOffset;
-
                 foreach (int offset in this.offsetTable)
                 {
                     WriteReferenceInteger(writer, offset, this.offsetIntSize);
                 }
 
                 // Write the trailer.
-                stream.Position += 6;
+                writer.Write(new byte[6], 0, 6);
                 writer.Write((byte)this.offsetIntSize);
                 writer.Write((byte)this.objectRefSize);
                 writer.Write(((long)this.objectTable.Count).ToBigEndianConditional());
@@ -561,7 +557,7 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>The number of bytes written.</returns>
         private int WriteDictionary(BinaryWriter writer, BinaryPlistDictionary value)
         {
-            int size = 1, skip = value.KeyReference.Count * this.objectRefSize;
+            int size = 1;
 
             if (value.KeyReference.Count < 15)
             {
@@ -573,24 +569,25 @@ namespace System.Runtime.Serialization.Plists
                 size += WriteIntegerWithoutMarker(writer, value.KeyReference.Count);
             }
 
-            long startPosition = writer.BaseStream.Position;
-
-            for (int i = 0; i < value.KeyReference.Count; i++)
+            foreach (int keyRef in value.KeyReference)
             {
-                writer.BaseStream.Position = startPosition + (i * this.objectRefSize);
-                WriteReferenceInteger(writer, value.KeyReference[i], this.objectRefSize);
-                writer.BaseStream.Position = startPosition + skip + (i * this.objectRefSize);
-                WriteReferenceInteger(writer, value.ObjectReference[i], this.objectRefSize);
+                size += WriteReferenceInteger(writer, keyRef, this.objectRefSize);
             }
 
-            return size + (value.KeyReference.Count * this.objectRefSize * 2);
+            foreach (int objectRef in value.ObjectReference)
+            {
+                size += WriteReferenceInteger(writer, objectRef, this.objectRefSize);
+            }
+
+            return size;
         }
 
         /// <summary>
         /// Writes the object table to the given <see cref="BinaryWriter"/>.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/> to write the object table to.</param>
-        private void WriteObjectTable(BinaryWriter writer)
+        /// <returns>The number of bytes written.</returns>
+        private int WriteObjectTable(BinaryWriter writer)
         {
             int currentOffset = this.topLevelObjectOffset;
             object obj;
@@ -675,6 +672,8 @@ namespace System.Runtime.Serialization.Plists
                     currentOffset += WritePrimitive(writer, null);
                 }
             }
+
+            return currentOffset - this.topLevelObjectOffset;
         }
 
         #endregion
