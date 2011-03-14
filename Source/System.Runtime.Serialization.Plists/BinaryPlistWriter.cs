@@ -365,7 +365,7 @@ namespace System.Runtime.Serialization.Plists
                     buffer = BitConverter.GetBytes(value.ToBigEndianConditional());
                     break;
                 default:
-                    throw new ArgumentException("The reference size must be one of 2, 4 or 8. The specified reference size was: " + size, "size");
+                    throw new ArgumentException("The reference size must be one of 1, 2, 4 or 8. The specified reference size was: " + size, "size");
             }
 
             writer.Write(buffer, 0, buffer.Length);
@@ -661,7 +661,7 @@ namespace System.Runtime.Serialization.Plists
                     {
                         currentOffset += WriteString(writer, (string)obj);
                     }
-                    else if (typeof(ISerializable).IsAssignableFrom(type) || type.IsSerializable)
+                    else if (typeof(byte[]).IsAssignableFrom(type) || typeof(ISerializable).IsAssignableFrom(type) || type.IsSerializable)
                     {
                         currentOffset += WriteData(writer, obj);
                     }

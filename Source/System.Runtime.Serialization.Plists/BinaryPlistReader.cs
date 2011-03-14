@@ -106,6 +106,10 @@ namespace System.Runtime.Serialization.Plists
                     this.ReadObjectTable(reader);
                 }
             }
+            else
+            {
+                throw new ArgumentException("The stream is too short to be a valid binary plist.", "stream");
+            }
 
             BinaryPlistDictionary root = this.objectTable[this.topLevelObjectOffset] as BinaryPlistDictionary;
 
