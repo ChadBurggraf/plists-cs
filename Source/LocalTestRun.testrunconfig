@@ -5,6 +5,7 @@
     <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Nested.plist" />
     <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Calculator.plist" />
     <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Types.plist" />
+    <DeploymentItem filename="System.Runtime.Serialization.Plists.Test\Profile.plist" />
   </Deployment>
   <TestTypeSpecific />
 </TestRunConfiguration>

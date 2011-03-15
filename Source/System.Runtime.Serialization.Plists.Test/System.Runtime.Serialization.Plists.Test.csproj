@@ -43,8 +43,10 @@
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <Compile Include="BinaryPlistTests.cs" />
+    <Compile Include="Paths.cs" />
+    <Compile Include="ReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WriterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\System.Runtime.Serialization.Plists\System.Runtime.Serialization.Plists.csproj">
@@ -55,6 +57,7 @@
   <ItemGroup>
     <None Include="Calculator.plist" />
     <None Include="Nested.plist" />
+    <None Include="Profile.plist" />
     <None Include="Types.plist" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

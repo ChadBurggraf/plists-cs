@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="BinaryPlistTests.cs" company="Tasty Codes">
+// <copyright file="WriterTests.cs" company="Tasty Codes">
 //     Copyright (c) 2011 Chad Burggraf.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -8,119 +8,116 @@ namespace System.Runtime.Serialization.Plists.Test
 {
     using System;
     using System.Collections;
-    using System.Diagnostics.CodeAnalysis;
+    using System.Collections.Generic;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
-    /// Unit tests for binary plist serialization.
+    /// Unit tests for binary plist writing.
     /// </summary>
     [TestClass]
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-    public class BinaryPlistTests
+    public class WriterTests
     {
-        private const string CalculatorPListPath = "Calculator.plist";
-        private const string NestedPListpath = "Nested.plist";
-        private const string TypesPListPath = "Types.plist";
-
         /// <summary>
-        /// Read object from Calculator.plist tests.
+        /// Write empty string tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistReadObjectCalculator()
+        public void WriterWriteEmptyString()
         {
+            string outputPath = Guid.NewGuid().ToString() + ".plist";
+            
+            IDictionary dict = new Dictionary<string, object>();
+            dict["Empty"] = String.Empty;
+
+            BinaryPlistWriter writer = new BinaryPlistWriter();
+            writer.WriteObject(outputPath, dict);
+
             BinaryPlistReader reader = new BinaryPlistReader();
-            IDictionary dictionary;
+            dict = reader.ReadObject(outputPath);
 
-            using (Stream stream = File.OpenRead(CalculatorPListPath))
-            {
-                dictionary = reader.ReadObject(stream);
-            }
-
-            Assert.AreEqual(5, dictionary.Count);
-            Assert.AreEqual("520 71 228 289 0 0 1440 878 ", dictionary["NSWindow Frame Calc_History_Window"]);
-            Assert.AreEqual("368 425 423 283 0 0 1440 878 ", dictionary["NSWindow Frame Calc_Main_Window"]);
-            Assert.AreEqual(true, dictionary["Programmer_BinaryIsHidden"]);
-            Assert.AreEqual((short)10, dictionary["Programmer_InputMode"]);
-            Assert.AreEqual("Scientific", dictionary["ViewDefaultsKey"]);
+            Assert.IsTrue(dict.Contains("Empty"));
+            Assert.AreEqual(String.Empty, dict["Empty"]);
         }
 
         /// <summary>
-        /// Read object from Nested.plist tests.
+        /// Write long collections tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistReadObjectNested()
+        public void WriterWriteLongCollection()
         {
-            BinaryPlistReader reader = new BinaryPlistReader();
-            IDictionary dictionary;
+            string outputPath = Guid.NewGuid().ToString() + ".plist";
 
-            using (Stream stream = File.OpenRead(NestedPListpath))
+            IDictionary dict = new Dictionary<string, object>();
+            IDictionary longDict = new Dictionary<string, object>();
+            List<int> longArray = new List<int>();
+
+            for (int i = 0; i < 72; i++)
             {
-                dictionary = reader.ReadObject(stream);
+                longDict.Add(i.ToString(), i);
             }
 
-            Assert.AreEqual(2, dictionary.Count);
-            Assert.IsInstanceOfType(dictionary["Array"], typeof(object[]));
-            Assert.IsInstanceOfType(dictionary["Dictionary"], typeof(IDictionary));
+            for (int i = 0; i < 756; i++)
+            {
+                longArray.Add(i);
+            }
 
-            object[] arr = dictionary["Array"] as object[];
-            IDictionary dict = dictionary["Dictionary"] as IDictionary;
-            Assert.AreEqual(3, arr.Length);
-            Assert.AreEqual(2, dictionary.Count);
+            dict["Dictionary"] = longDict;
+            dict["Array"] = longArray;
 
-            Assert.AreEqual("First", arr[0]);
-            Assert.AreEqual("Second", arr[1]);
-            Assert.AreEqual("Third", arr[2]);
+            BinaryPlistWriter writer = new BinaryPlistWriter();
+            writer.WriteObject(outputPath, dict);
 
-            Assert.AreEqual(1.0000000000000011, dict["Double"]);
-            Assert.AreEqual(4, ((object[])dict["Array"]).Length);
+            BinaryPlistReader reader = new BinaryPlistReader();
+            dict = reader.ReadObject(outputPath);
 
-            arr = dict["Array"] as object[];
-            Assert.AreEqual("1", arr[0]);
-            Assert.AreEqual((short)2, arr[1]);
-            Assert.AreEqual(true, arr[2]);
-            Assert.AreEqual("4", arr[3]);
+            Assert.AreEqual(2, dict.Count);
+            Assert.AreEqual(72, ((IDictionary)dict["Dictionary"]).Count);
+            Assert.AreEqual(756, ((object[])dict["Array"]).Length);
         }
 
         /// <summary>
-        /// Read object from Types.plist tests.
+        /// Write long ASCII string tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistReadObjectTypes()
+        public void WriterWriteLongAsciiString()
         {
-            BinaryPlistReader reader = new BinaryPlistReader();
-            IDictionary dictionary;
+            string outputPath = Guid.NewGuid().ToString() + ".plist";
 
-            using (Stream stream = File.OpenRead(TypesPListPath))
-            {
-                dictionary = reader.ReadObject(stream);
-            }
+            IDictionary dict = new Dictionary<string, string>();
+            dict["LongAscii"] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit imperdiet ornare.";
+            new BinaryPlistWriter().WriteObject(outputPath, dict);
 
-            Assert.AreEqual(7, dictionary.Count);
-            Assert.AreEqual("¡™£¢∞§¶•ªº–≠πøˆ¨¥†®´∑œ", dictionary["Unicode"]);
-            Assert.AreEqual(false, dictionary["False"]);
-            Assert.IsInstanceOfType(dictionary["Data"], typeof(byte[]));
-            Assert.AreEqual(new DateTime(1982, 05, 28, 7, 0, 0), dictionary["Date"]);
-            Assert.AreEqual(true, dictionary["True"]);
-            Assert.AreEqual(3.14159, dictionary["Pi"]);
-            Assert.AreEqual("World", dictionary["Hello"]);
+            dict = new BinaryPlistReader().ReadObject(outputPath);
+            Assert.AreEqual("Lorem ipsum dolor sit amet, consectetur adipiscing elit imperdiet ornare.", dict["LongAscii"]);
+        }
+
+        /// <summary>
+        /// Write long Unicode string tests.
+        /// </summary>
+        [TestMethod]
+        public void WriterWriteLongUnicodeString()
+        {
+            string outputPath = Guid.NewGuid().ToString() + ".plist";
+
+            IDictionary dict = new Dictionary<string, string>();
+            dict["LongUnicode"] = "ºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒç";
+            new BinaryPlistWriter().WriteObject(outputPath, dict);
+
+            dict = new BinaryPlistReader().ReadObject(outputPath);
+            Assert.AreEqual("ºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒçºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒç", dict["LongUnicode"]);
         }
 
         /// <summary>
         /// Write object from Calculator.plist tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistWriteObjectCalculator()
+        public void WriterWriteObjectCalculator()
         {
             string outputPath = Guid.NewGuid().ToString() + ".plist";
             BinaryPlistReader reader = new BinaryPlistReader();
             IDictionary dictionary;
 
-            using (Stream stream = File.OpenRead(CalculatorPListPath))
+            using (Stream stream = File.OpenRead(Paths.CalculatorPlistPath))
             {
                 dictionary = reader.ReadObject(stream);
             }
@@ -155,14 +152,13 @@ namespace System.Runtime.Serialization.Plists.Test
         /// Write object from Nested.plist tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistWriteObjectNested()
+        public void WriterWriteObjectNested()
         {
             string outputPath = Guid.NewGuid().ToString() + ".plist";
             BinaryPlistReader reader = new BinaryPlistReader();
             IDictionary dictionary;
 
-            using (Stream stream = File.OpenRead(NestedPListpath))
+            using (Stream stream = File.OpenRead(Paths.NestedPlistPath))
             {
                 dictionary = reader.ReadObject(stream);
             }
@@ -221,14 +217,13 @@ namespace System.Runtime.Serialization.Plists.Test
         /// Write object from Types.plist tests.
         /// </summary>
         [TestMethod]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
-        public void BinaryPlistWriteObjectTypes()
+        public void WriterWriteObjectTypes()
         {
             string outputPath = Guid.NewGuid().ToString() + ".plist";
             BinaryPlistReader reader = new BinaryPlistReader();
             IDictionary dictionary;
 
-            using (Stream stream = File.OpenRead(TypesPListPath))
+            using (Stream stream = File.OpenRead(Paths.TypesPlistPath))
             {
                 dictionary = reader.ReadObject(stream);
             }

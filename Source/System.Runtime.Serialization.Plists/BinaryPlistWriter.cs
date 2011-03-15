@@ -45,7 +45,7 @@ namespace System.Runtime.Serialization.Plists
 
         private List<object> objectTable;
         private List<long> offsetTable;
-        private int topLevelObjectOffset, offsetIntSize, objectRefSize, maxCollectionSize;
+        private int topLevelObjectOffset, objectRefSize;
 
         #endregion
 
@@ -126,19 +126,18 @@ namespace System.Runtime.Serialization.Plists
 
                 // Write the object table.
                 this.topLevelObjectOffset = 8;
-                this.offsetIntSize = ByteSizeForRefCount(this.offsetTable.Count);
                 this.objectRefSize = ByteSizeForRefCount(this.objectTable.Count);
                 long offsetTableOffset = this.topLevelObjectOffset + this.WriteObjectTable(writer);
 
                 // Write the offset table.
                 foreach (int offset in this.offsetTable)
                 {
-                    WriteReferenceInteger(writer, offset, this.offsetIntSize);
+                    WriteReferenceInteger(writer, offset, this.objectRefSize);
                 }
 
                 // Write the trailer.
                 writer.Write(new byte[6], 0, 6);
-                writer.Write((byte)this.offsetIntSize);
+                writer.Write((byte)this.objectRefSize);
                 writer.Write((byte)this.objectRefSize);
                 writer.Write(((long)this.objectTable.Count).ToBigEndianConditional());
                 writer.Write((long)0);
@@ -236,7 +235,10 @@ namespace System.Runtime.Serialization.Plists
                 size += WriteIntegerWithoutMarker(writer, buffer.Length);
             }
 
-            writer.Write(buffer, 0, buffer.Length);
+            if (buffer.Length > 0)
+            {
+                writer.Write(buffer, 0, buffer.Length);
+            }
 
             return buffer.Length + size;
         }
@@ -409,7 +411,11 @@ namespace System.Runtime.Serialization.Plists
                 }
             }
 
-            writer.Write(buffer, 0, buffer.Length);
+            if (buffer.Length > 0)
+            {
+                writer.Write(buffer, 0, buffer.Length);
+            }
+
             return buffer.Length + size;
         }
 
@@ -424,7 +430,7 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>The index of the added array.</returns>
         private int AddArray(IEnumerable array)
         {
-            int index = this.objectTable.Count, itemCount = 0;
+            int index = this.objectTable.Count;
 
             BinaryPlistArray arr = new BinaryPlistArray(this.objectTable);
             this.objectTable.Add(arr);
@@ -432,12 +438,6 @@ namespace System.Runtime.Serialization.Plists
             foreach (object value in array)
             {
                 arr.ObjectReference.Add(this.AddObject(value));
-                itemCount++;
-            }
-
-            if (itemCount > this.maxCollectionSize)
-            {
-                this.maxCollectionSize = itemCount;
             }
 
             return index;
@@ -459,11 +459,6 @@ namespace System.Runtime.Serialization.Plists
             {
                 dict.KeyReference.Add(this.AddObject(key));
                 dict.ObjectReference.Add(this.AddObject(dictionary[key]));
-            }
-
-            if (dictionary.Count > this.maxCollectionSize)
-            {
-                this.maxCollectionSize = dictionary.Count;
             }
 
             return index;
@@ -490,7 +485,10 @@ namespace System.Runtime.Serialization.Plists
                 {
                     index = this.AddDictionary(value as IDictionary);
                 }
-                else if ((typeof(Array).IsAssignableFrom(type) || typeof(ICollection).IsAssignableFrom(type)) && !typeof(byte[]).IsAssignableFrom(type))
+                else if ((typeof(Array).IsAssignableFrom(type) 
+                    || typeof(IEnumerable).IsAssignableFrom(type)) 
+                    && !typeof(string).IsAssignableFrom(type)
+                    && !typeof(byte[]).IsAssignableFrom(type))
                 {
                     index = this.AddArray(value as IEnumerable);
                 }
@@ -513,9 +511,7 @@ namespace System.Runtime.Serialization.Plists
         private void Reset()
         {
             this.topLevelObjectOffset =
-            this.offsetIntSize =
-            this.objectRefSize =
-            this.maxCollectionSize = 0;
+            this.objectRefSize = 0;
 
             this.objectTable = new List<object>();
             this.offsetTable = new List<long>();
@@ -664,7 +660,7 @@ namespace System.Runtime.Serialization.Plists
                     }
                     else
                     {
-                        throw new InvalidOperationException("A type was found in the object table that is not serializable. Types that are natively serializable to a binary plist include: null, booleans, integers, floats, dates, strings, arrays and dictionaries. Any other types must be marked with a SerializableAttribute or implement ISerializable.");
+                        throw new InvalidOperationException("A type was found in the object table that is not serializable. Types that are natively serializable to a binary plist include: null, booleans, integers, floats, dates, strings, arrays and dictionaries. Any other types must be marked with a SerializableAttribute or implement ISerializable. The type that caused this exception to be thrown is: " + type.FullName);
                     }
                 }
                 else
