@@ -23,7 +23,7 @@ namespace System.Runtime.Serialization.Plists
         /// Initializes a new instance of the BinaryPlistArray class.
         /// </summary>
         /// <param name="objectTable">A reference to the binary plist's object table.</param>
-        public BinaryPlistArray(IList<object> objectTable)
+        public BinaryPlistArray(IList<BinaryPlistItem> objectTable)
             : this(objectTable, 0)
         {
         }
@@ -33,7 +33,7 @@ namespace System.Runtime.Serialization.Plists
         /// </summary>
         /// <param name="objectTable">A reference to the binary plist's object table.</param>
         /// <param name="size">The size of the array.</param>
-        public BinaryPlistArray(IList<object> objectTable, int size)
+        public BinaryPlistArray(IList<BinaryPlistItem> objectTable, int size)
         {
             this.ObjectReference = new List<int>(size);
             this.ObjectTable = objectTable;
@@ -47,7 +47,7 @@ namespace System.Runtime.Serialization.Plists
         /// <summary>
         /// Gets a reference to the binary plist's object table.
         /// </summary>
-        public IList<object> ObjectTable { get; private set; }
+        public IList<BinaryPlistItem> ObjectTable { get; private set; }
 
         /// <summary>
         /// Converts this instance into an <see cref="T:object[]"/> array.
@@ -65,9 +65,9 @@ namespace System.Runtime.Serialization.Plists
             {
                 objectRef = this.ObjectReference[i];
 
-                if (objectRef >= 0 && objectRef < this.ObjectTable.Count && this.ObjectTable[objectRef] != this)
+                if (objectRef >= 0 && objectRef < this.ObjectTable.Count && (this.ObjectTable[objectRef] == null || this.ObjectTable[objectRef].Value != this))
                 {
-                    objectValue = this.ObjectTable[objectRef];
+                    objectValue = this.ObjectTable[objectRef] == null ? null : this.ObjectTable[objectRef].Value;
                     innerDict = objectValue as BinaryPlistDictionary;
 
                     if (innerDict != null)
@@ -109,7 +109,7 @@ namespace System.Runtime.Serialization.Plists
 
                 objectRef = this.ObjectReference[i];
 
-                if (this.ObjectTable.Count > objectRef && this.ObjectTable[objectRef] != this)
+                if (this.ObjectTable.Count > objectRef && (this.ObjectTable[objectRef] == null || this.ObjectTable[objectRef].Value != this))
                 {
                     sb.Append(this.ObjectReference[objectRef]);
                 }

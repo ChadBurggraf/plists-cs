@@ -9,6 +9,7 @@ namespace System.Runtime.Serialization.Plists.Test
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,7 +54,7 @@ namespace System.Runtime.Serialization.Plists.Test
 
             for (int i = 0; i < 72; i++)
             {
-                longDict.Add(i.ToString(), i);
+                longDict.Add(i.ToString(CultureInfo.InvariantCulture), i);
             }
 
             for (int i = 0; i < 756; i++)
@@ -248,7 +249,7 @@ namespace System.Runtime.Serialization.Plists.Test
                 dictionary = reader.ReadObject(stream);
             }
 
-            Assert.AreEqual(7, dictionary.Count);
+            Assert.AreEqual(9, dictionary.Count);
             Assert.AreEqual("ºª•¶§∞¢£™¬˚∆¨˙©ƒ´ßƒç", dictionary["Unicode"]);
             Assert.AreEqual(true, dictionary["False"]);
             Assert.IsInstanceOfType(dictionary["Data"], typeof(byte[]));

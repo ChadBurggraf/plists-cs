@@ -23,7 +23,7 @@ namespace System.Runtime.Serialization.Plists
     {
         #region Private Fields
 
-        private List<object> objectTable;
+        private List<BinaryPlistItem> objectTable;
         private List<int> offsetTable;
         private int offsetIntSize, objectRefSize, objectCount, topLevelObjectOffset, offsetTableOffset;
 
@@ -111,7 +111,7 @@ namespace System.Runtime.Serialization.Plists
                 throw new ArgumentException("The stream is too short to be a valid binary plist.", "stream");
             }
 
-            BinaryPlistDictionary root = this.objectTable[this.topLevelObjectOffset] as BinaryPlistDictionary;
+            BinaryPlistDictionary root = this.objectTable[this.topLevelObjectOffset].Value as BinaryPlistDictionary;
 
             if (root != null)
             {
@@ -398,6 +398,7 @@ namespace System.Runtime.Serialization.Plists
             bool? primitive;
             int size, intSize;
             long parsedInt;
+            BinaryPlistItem item;
 
             for (int i = 0; i < this.objectCount; i++)
             {
@@ -410,7 +411,7 @@ namespace System.Runtime.Serialization.Plists
                     case 0:
                         if (ReadPrimitive(reader, reader.BaseStream.Position - 1, out primitive))
                         {
-                            this.objectTable.Add(primitive);
+                            this.objectTable.Add(new BinaryPlistItem(primitive));
                         }
 
                         break;
@@ -420,28 +421,28 @@ namespace System.Runtime.Serialization.Plists
 
                         if (size < 4)
                         {
-                            this.objectTable.Add((short)parsedInt);
+                            this.objectTable.Add(new BinaryPlistItem((short)parsedInt));
                         }
                         else if (size < 8)
                         {
-                            this.objectTable.Add((int)parsedInt);
+                            this.objectTable.Add(new BinaryPlistItem((int)parsedInt));
                         }
                         else
                         {
-                            this.objectTable.Add(parsedInt);
+                            this.objectTable.Add(new BinaryPlistItem(parsedInt));
                         }
 
                         break;
                     case 2:
                         size = 1 << (marker & 0xf);
-                        this.objectTable.Add(ReadReal(reader, reader.BaseStream.Position, size));
+                        this.objectTable.Add(new BinaryPlistItem(ReadReal(reader, reader.BaseStream.Position, size)));
                         break;
                     case 3:
                         size = marker & 0xf;
 
                         if (size == 3)
                         {
-                            this.objectTable.Add(ReadDate(reader, reader.BaseStream.Position, 8));
+                            this.objectTable.Add(new BinaryPlistItem(ReadDate(reader, reader.BaseStream.Position, 8)));
                         }
                         else
                         {
@@ -458,7 +459,7 @@ namespace System.Runtime.Serialization.Plists
                             size = (int)ReadInteger(reader, reader.BaseStream.Position, intSize);
                         }
 
-                        this.objectTable.Add(ReadData(reader, reader.BaseStream.Position, size));
+                        this.objectTable.Add(new BinaryPlistItem(ReadData(reader, reader.BaseStream.Position, size)));
                         break;
                     case 5:
                         size = marker & 0xf;
@@ -469,7 +470,7 @@ namespace System.Runtime.Serialization.Plists
                             size = (int)ReadInteger(reader, reader.BaseStream.Position, intSize);
                         }
 
-                        this.objectTable.Add(ReadAsciiString(reader, reader.BaseStream.Position, size));
+                        this.objectTable.Add(new BinaryPlistItem(ReadAsciiString(reader, reader.BaseStream.Position, size)));
                         break;
                     case 6:
                         size = marker & 0xf;
@@ -480,11 +481,11 @@ namespace System.Runtime.Serialization.Plists
                             size = (int)ReadInteger(reader, reader.BaseStream.Position, intSize);
                         }
 
-                        this.objectTable.Add(ReadUnicodeString(reader, reader.BaseStream.Position, size));
+                        this.objectTable.Add(new BinaryPlistItem(ReadUnicodeString(reader, reader.BaseStream.Position, size)));
                         break;
                     case 8:
                         size = (marker & 0xf) + 1;
-                        this.objectTable.Add(ReadUniqueId(reader, reader.BaseStream.Position, size));
+                        this.objectTable.Add(new BinaryPlistItem(ReadUniqueId(reader, reader.BaseStream.Position, size)));
                         break;
                     case 10:
                     case 12:
@@ -496,7 +497,9 @@ namespace System.Runtime.Serialization.Plists
                             size = (int)ReadInteger(reader, reader.BaseStream.Position, intSize);
                         }
 
-                        this.objectTable.Add(this.ReadArray(reader, reader.BaseStream.Position, size));
+                        item = new BinaryPlistItem(this.ReadArray(reader, reader.BaseStream.Position, size));
+                        item.IsArray = true;
+                        this.objectTable.Add(item);
                         break;
                     case 13:
                         size = marker & 0xf;
@@ -507,7 +510,9 @@ namespace System.Runtime.Serialization.Plists
                             size = (int)ReadInteger(reader, reader.BaseStream.Position, intSize);
                         }
 
-                        this.objectTable.Add(this.ReadDictionary(reader, reader.BaseStream.Position, size));
+                        item = new BinaryPlistItem(this.ReadDictionary(reader, reader.BaseStream.Position, size));
+                        item.IsDictionary = true;
+                        this.objectTable.Add(item);
                         break;
                     default:
                         throw new InvalidOperationException("An invalid marker was found while reading the object table: " + marker.ToBinaryString());
@@ -538,7 +543,7 @@ namespace System.Runtime.Serialization.Plists
             this.offsetTableOffset =
             this.topLevelObjectOffset = 0;
 
-            this.objectTable = new List<object>();
+            this.objectTable = new List<BinaryPlistItem>();
             this.offsetTable = new List<int>();
         }
 

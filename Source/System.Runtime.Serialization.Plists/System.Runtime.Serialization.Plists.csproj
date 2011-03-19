@@ -51,6 +51,7 @@
     <Compile Include="BinaryPlistDictionary.cs" />
     <Compile Include="BinaryPlistReader.cs" />
     <Compile Include="BinaryPlistWriter.cs" />
+    <Compile Include="BinaryPlistItem.cs" />
     <Compile Include="EndianConverter.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IPlistSerializable.cs" />

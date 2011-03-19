@@ -24,17 +24,8 @@ namespace System.Runtime.Serialization.Plists
         /// Initializes a new instance of the BinaryPlistDictionary class.
         /// </summary>
         /// <param name="objectTable">A reference to the binary plist's object table.</param>
-        public BinaryPlistDictionary(IList<object> objectTable)
-            : this(objectTable, 0)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the BinaryPlistDictionary class.
-        /// </summary>
-        /// <param name="objectTable">A reference to the binary plist's object table.</param>
         /// <param name="size">The size of the dictionay.</param>
-        public BinaryPlistDictionary(IList<object> objectTable, int size)
+        public BinaryPlistDictionary(IList<BinaryPlistItem> objectTable, int size)
         {
             this.KeyReference = new List<int>(size);
             this.ObjectReference = new List<int>(size);
@@ -54,27 +45,7 @@ namespace System.Runtime.Serialization.Plists
         /// <summary>
         /// Gets a reference to the binary plist's object table.
         /// </summary>
-        public IList<object> ObjectTable { get; private set; }
-
-        /// <summary>
-        /// Gets the key at the specified index as a string.
-        /// </summary>
-        /// <param name="index">The index in the key reference collection to get the key at.</param>
-        /// <returns>The specified key as a string.</returns>
-        public string GetKey(int index)
-        {
-            return this.ObjectTable[this.KeyReference[index]].ToString();
-        }
-
-        /// <summary>
-        /// Gets the object value at the specified index.
-        /// </summary>
-        /// <param name="index">The index in the object reference collection to get the object value at.</param>
-        /// <returns>The specified object value.</returns>
-        public object GetValue(int index)
-        {
-            return this.ObjectTable[this.ObjectReference[index]];
-        }
+        public IList<BinaryPlistItem> ObjectTable { get; private set; }
 
         /// <summary>
         /// Converts this instance into a <see cref="Dictionary{Object, Object}"/>.
@@ -84,7 +55,7 @@ namespace System.Runtime.Serialization.Plists
         {
             Dictionary<object, object> dictionary = new Dictionary<object, object>();
             int keyRef, objectRef;
-            object objectValue;
+            object keyValue, objectValue;
             BinaryPlistArray innerArray;
             BinaryPlistDictionary innerDict;
 
@@ -93,10 +64,11 @@ namespace System.Runtime.Serialization.Plists
                 keyRef = this.KeyReference[i];
                 objectRef = this.ObjectReference[i];
 
-                if (keyRef >= 0 && keyRef < this.ObjectTable.Count && this.ObjectTable[keyRef] != this &&
-                    objectRef >= 0 && objectRef < this.ObjectTable.Count && this.ObjectTable[objectRef] != this)
+                if (keyRef >= 0 && keyRef < this.ObjectTable.Count && (this.ObjectTable[keyRef] == null || this.ObjectTable[keyRef].Value != this) &&
+                    objectRef >= 0 && objectRef < this.ObjectTable.Count && (this.ObjectTable[objectRef] == null || this.ObjectTable[objectRef].Value != this))
                 {
-                    objectValue = this.ObjectTable[objectRef];
+                    keyValue = this.ObjectTable[keyRef] == null ? null : this.ObjectTable[keyRef].Value;
+                    objectValue = this.ObjectTable[objectRef] == null ? null : this.ObjectTable[objectRef].Value; 
                     innerDict = objectValue as BinaryPlistDictionary;
 
                     if (innerDict != null)
@@ -113,7 +85,7 @@ namespace System.Runtime.Serialization.Plists
                         }
                     }
 
-                    dictionary[this.ObjectTable[keyRef]] = objectValue;
+                    dictionary[keyValue] = objectValue;
                 }
             }
 
@@ -143,7 +115,7 @@ namespace System.Runtime.Serialization.Plists
                 {
                     sb.Append("#" + keyRef);
                 }
-                else if (this.ObjectTable[keyRef] == this)
+                else if (this.ObjectTable[keyRef] != null && this.ObjectTable[keyRef].Value == this)
                 {
                     sb.Append("*" + keyRef);
                 }
@@ -158,7 +130,7 @@ namespace System.Runtime.Serialization.Plists
                 {
                     sb.Append("#" + objectRef);
                 }
-                else if (this.ObjectTable[objectRef] == this)
+                else if (this.ObjectTable[objectRef] != null && this.ObjectTable[objectRef].Value == this)
                 {
                     sb.Append("*" + objectRef);
                 }
