@@ -29,6 +29,17 @@ namespace System.Runtime.Serialization.Plists
 
         #endregion
 
+        #region Construction
+
+        /// <summary>
+        /// Initializes a new instance of the BinaryPlistReader class.
+        /// </summary>
+        public BinaryPlistReader()
+        {
+        }
+
+        #endregion
+
         #region Public Instance Methods
 
         /// <summary>
@@ -56,73 +67,101 @@ namespace System.Runtime.Serialization.Plists
                 throw new ArgumentNullException("stream", "stream cannot be null.");
             }
 
-            if (!stream.CanRead || !stream.CanSeek)
+            if (!stream.CanRead)
             {
-                throw new ArgumentException("The stream must be a readable and seek-able stream.", "stream");
+                throw new ArgumentException("The stream must be readable.", "stream");
             }
 
-            Dictionary<object, object> dictionary = null;
-            this.Reset();
+            Stream concreteStream = stream;
+            bool disposeConcreteStream = false;
 
-            // Header + trailer = 40.
-            if (stream.Length > 40)
+            if (!stream.CanSeek)
             {
-                using (BinaryReader reader = new BinaryReader(stream))
+                concreteStream = new MemoryStream();
+                byte[] buffer = new byte[4096];
+                int count = 0;
+
+                while (0 < (count = stream.Read(buffer, 0, buffer.Length)))
                 {
-                    // Read the header.
-                    stream.Position = 0;
-                    int bpli = reader.ReadInt32().ToBigEndianConditional();
-                    int version = reader.ReadInt32().ToBigEndianConditional();
+                    concreteStream.Write(buffer, 0, count);
+                }
 
-                    if (bpli != BinaryPlistWriter.HeaderMagicNumber || version != BinaryPlistWriter.HeaderVersionNumber)
+                concreteStream.Position = 0;
+                disposeConcreteStream = true;
+            }
+
+            try
+            {
+                Dictionary<object, object> dictionary = null;
+                this.Reset();
+
+                // Header + trailer = 40.
+                if (stream.Length > 40)
+                {
+                    using (BinaryReader reader = new BinaryReader(concreteStream))
                     {
-                        throw new ArgumentException("The stream data does not start with required 'bplist00' header.", "stream");
+                        // Read the header.
+                        stream.Position = 0;
+                        int bpli = reader.ReadInt32().ToBigEndianConditional();
+                        int version = reader.ReadInt32().ToBigEndianConditional();
+
+                        if (bpli != BinaryPlistWriter.HeaderMagicNumber || version != BinaryPlistWriter.HeaderVersionNumber)
+                        {
+                            throw new ArgumentException("The stream data does not start with required 'bplist00' header.", "stream");
+                        }
+
+                        // Read the trailer.
+                        // The first six bytes of the first eight-byte block are unused, so offset by 26 instead of 32.
+                        stream.Position = stream.Length - 26;
+                        this.offsetIntSize = (int)reader.ReadByte();
+                        this.objectRefSize = (int)reader.ReadByte();
+                        this.objectCount = (int)reader.ReadInt64().ToBigEndianConditional();
+                        this.topLevelObjectOffset = (int)reader.ReadInt64().ToBigEndianConditional();
+                        this.offsetTableOffset = (int)reader.ReadInt64().ToBigEndianConditional();
+                        int offsetTableSize = this.offsetIntSize * this.objectCount;
+
+                        // Ensure our sanity.
+                        if (this.offsetIntSize < 1
+                            || this.offsetIntSize > 8
+                            || this.objectRefSize < 1
+                            || this.objectRefSize > 8
+                            || this.offsetTableOffset < 8
+                            || this.topLevelObjectOffset >= this.objectCount
+                            || offsetTableSize + this.offsetTableOffset + 32 > stream.Length)
+                        {
+                            throw new ArgumentException("The stream data contains an invalid trailer.", "stream");
+                        }
+
+                        // Read the offset table and then the object table.
+                        this.ReadOffsetTable(reader);
+                        this.ReadObjectTable(reader);
                     }
+                }
+                else
+                {
+                    throw new ArgumentException("The stream is too short to be a valid binary plist.", "stream");
+                }
 
-                    // Read the trailer.
-                    // The first six bytes of the first eight-byte block are unused, so offset by 26 instead of 32.
-                    stream.Position = stream.Length - 26;
-                    this.offsetIntSize = (int)reader.ReadByte();
-                    this.objectRefSize = (int)reader.ReadByte();
-                    this.objectCount = (int)reader.ReadInt64().ToBigEndianConditional();
-                    this.topLevelObjectOffset = (int)reader.ReadInt64().ToBigEndianConditional();
-                    this.offsetTableOffset = (int)reader.ReadInt64().ToBigEndianConditional();
-                    int offsetTableSize = this.offsetIntSize * this.objectCount;
+                BinaryPlistDictionary root = this.objectTable[this.topLevelObjectOffset].Value as BinaryPlistDictionary;
 
-                    // Ensure our sanity.
-                    if (this.offsetIntSize < 1
-                        || this.offsetIntSize > 8
-                        || this.objectRefSize < 1
-                        || this.objectRefSize > 8
-                        || this.offsetTableOffset < 8
-                        || this.topLevelObjectOffset >= this.objectCount
-                        || offsetTableSize + this.offsetTableOffset + 32 > stream.Length)
-                    {
-                        throw new ArgumentException("The stream data contains an invalid trailer.", "stream");
-                    }
+                if (root != null)
+                {
+                    dictionary = root.ToDictionary();
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unsupported root plist object: " + this.objectTable[this.topLevelObjectOffset].GetType() + ". A dictionary must be the root plist object.");
+                }
 
-                    // Read the offset table and then the object table.
-                    this.ReadOffsetTable(reader);
-                    this.ReadObjectTable(reader);
+                return dictionary ?? new Dictionary<object, object>();
+            }
+            finally
+            {
+                if (disposeConcreteStream && concreteStream != null)
+                {
+                    concreteStream.Dispose();
                 }
             }
-            else
-            {
-                throw new ArgumentException("The stream is too short to be a valid binary plist.", "stream");
-            }
-
-            BinaryPlistDictionary root = this.objectTable[this.topLevelObjectOffset].Value as BinaryPlistDictionary;
-
-            if (root != null)
-            {
-                dictionary = root.ToDictionary();
-            }
-            else
-            {
-                throw new InvalidOperationException("Unsupported root plist object: " + this.objectTable[this.topLevelObjectOffset].GetType() + ". A dictionary must be the root plist object.");
-            }
-
-            return dictionary ?? new Dictionary<object, object>();
         }
 
         /// <summary>

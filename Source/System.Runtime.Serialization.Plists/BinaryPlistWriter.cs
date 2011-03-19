@@ -51,6 +51,17 @@ namespace System.Runtime.Serialization.Plists
 
         #endregion
 
+        #region Construction
+
+        /// <summary>
+        /// Initializes a new instance of the BinaryPlistWriter class.
+        /// </summary>
+        public BinaryPlistWriter()
+        {
+        }
+
+        #endregion
+
         #region Public Instance Methods
 
         /// <summary>
