@@ -409,90 +409,98 @@ namespace System.Runtime.Serialization.Plists
         private int AddObject(object value)
         {
             int index = this.objectTable.Count;
-            
+            Type type = null;
+            TypeCode typeCode = TypeCode.Empty;
+
             if (value != null)
             {
-                Type type = value.GetType();
-
-                if (typeof(IPlistSerializable).IsAssignableFrom(type))
-                {
-                    index = this.AddDictionary(((IPlistSerializable)value).ToPlistDictionary());
-                }
-                else if (typeof(IDictionary).IsAssignableFrom(type))
-                {
-                    index = this.AddDictionary(value as IDictionary);
-                }
-                else if ((typeof(Array).IsAssignableFrom(type) 
-                    || typeof(IEnumerable).IsAssignableFrom(type)) 
-                    && !typeof(string).IsAssignableFrom(type)
-                    && !typeof(byte[]).IsAssignableFrom(type))
-                {
-                    index = this.AddArray(value as IEnumerable);
-                }
-                else if (typeof(bool).IsAssignableFrom(type))
-                {
-                    index = this.AddPrimitive((bool)value);
-                }
-                else if (typeof(long).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)value);
-                }
-                else if (typeof(int).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(int)value);
-                }
-                else if (typeof(uint).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(uint)value);
-                }
-                else if (typeof(short).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(short)value);
-                }
-                else if (typeof(ushort).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(ushort)value);
-                }
-                else if (typeof(byte).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(byte)value);
-                }
-                else if (typeof(sbyte).IsAssignableFrom(type))
-                {
-                    index = this.AddInteger((long)(sbyte)value);
-                }
-                else if (typeof(double).IsAssignableFrom(type))
-                {
-                    index = this.AddReal((double)value);
-                }
-                else if (typeof(float).IsAssignableFrom(type))
-                {
-                    index = this.AddReal((double)(float)value);
-                }
-                else if (typeof(decimal).IsAssignableFrom(type))
-                {
-                    index = this.AddReal((double)(decimal)value);
-                }
-                else if (typeof(DateTime).IsAssignableFrom(type))
-                {
-                    index = this.AddDate((DateTime)value);
-                }
-                else if (typeof(string).IsAssignableFrom(type))
-                {
-                    index = this.AddString((string)value);
-                }
-                else if (typeof(byte[]).IsAssignableFrom(type) || typeof(ISerializable).IsAssignableFrom(type) || type.IsSerializable)
-                {
-                    index = this.AddData(value);
-                }
-                else
-                {
-                    throw new InvalidOperationException("A type was found in the object table that is not serializable. Types that are natively serializable to a binary plist include: null, booleans, integers, floats, dates, strings, arrays and dictionaries. Any other types must be marked with a SerializableAttribute or implement ISerializable. The type that caused this exception to be thrown is: " + type.FullName);
-                }
+                type = value.GetType();
+                typeCode = Type.GetTypeCode(type);
             }
-            else
+            
+            switch (typeCode)
             {
-                this.objectTable.Add(new BinaryPlistItem(null));
+                case TypeCode.Boolean:
+                    index = this.AddPrimitive((bool)value);
+                    break;
+                case TypeCode.Byte:
+                    index = this.AddInteger((long)(byte)value);
+                    break;
+                case TypeCode.Char:
+                    index = this.AddInteger((long)(char)value);
+                    break;
+                case TypeCode.DateTime:
+                    index = this.AddDate((DateTime)value);
+                    break;
+                case TypeCode.DBNull:
+                    index = this.AddPrimitive(null);
+                    break;
+                case TypeCode.Decimal:
+                    index = this.AddReal((double)(decimal)value);
+                    break;
+                case TypeCode.Double:
+                    index = this.AddReal((double)value);
+                    break;
+                case TypeCode.Empty:
+                    index = this.AddPrimitive(null);
+                    break;
+                case TypeCode.Int16:
+                    index = this.AddInteger((long)(int)value);
+                    break;
+                case TypeCode.Int32:
+                    index = this.AddInteger((long)(int)value);
+                    break;
+                case TypeCode.Int64:
+                    index = this.AddInteger((long)value);
+                    break;
+                case TypeCode.SByte:
+                    index = this.AddInteger((long)(sbyte)value);
+                    break;
+                case TypeCode.Single:
+                    index = this.AddReal((double)(float)value);
+                    break;
+                case TypeCode.String:
+                    index = this.AddString((string)value);
+                    break;
+                case TypeCode.UInt16:
+                    index = this.AddInteger((long)(ushort)value);
+                    break;
+                case TypeCode.UInt32:
+                    index = this.AddInteger((long)(uint)value);
+                    break;
+                case TypeCode.UInt64:
+                    throw new InvalidOperationException("UInt64 cannot be written to a binary plist. Please use Int64 instead. If your value cannot fit into an Int64, consider separating it into two UInt32 values.");
+                default:
+                    if (type.IsEnum)
+                    {
+                        index = this.AddInteger((int)value);
+                    }
+                    else if (typeof(IPlistSerializable).IsAssignableFrom(type))
+                    {
+                        index = this.AddDictionary(((IPlistSerializable)value).ToPlistDictionary());
+                    }
+                    else if (typeof(IDictionary).IsAssignableFrom(type))
+                    {
+                        index = this.AddDictionary(value as IDictionary);
+                    }
+                    else if ((typeof(Array).IsAssignableFrom(type)
+                        || typeof(IEnumerable).IsAssignableFrom(type))
+                        && !typeof(string).IsAssignableFrom(type)
+                        && !typeof(byte[]).IsAssignableFrom(type))
+                    {
+                        index = this.AddArray(value as IEnumerable);
+                    }
+                    else if (typeof(byte[]).IsAssignableFrom(type) 
+                        || typeof(ISerializable).IsAssignableFrom(type) 
+                        || type.IsSerializable)
+                    {
+                        index = this.AddData(value);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("A type was found in the object table that is not serializable. Types that are natively serializable to a binary plist include: null, booleans, integers, floats, dates, strings, arrays and dictionaries. Any other types must be marked with a SerializableAttribute or implement ISerializable. The type that caused this exception to be thrown is: " + type.FullName);
+                    }
+                    break;
             }
 
             return index;
