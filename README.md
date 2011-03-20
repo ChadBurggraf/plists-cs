@@ -24,14 +24,14 @@ There are two primary classes exposed by the assembly: `BinaryPlistReader` and `
 
  - `null`
  - `bool`
- - `int` (`byte`, `ushort`, `short`, `uint`, `int` and `long`)
+ - `int` (`byte`, `sbyte`, `ushort`, `short`, `uint`, `int` and `long`)
  - `double` (`float`, `double` and `decimal`)
  - `DateTime`
  - `string` (ASCII and Unicode)
  - `object[]` (arrays with members of any of the above types plus `object[]` and `IDictionary`)
- - `IDictionary` (with members of any of the above types plus `IDictionary`)
+ - `IDictionary` (dictionaries with members of any of the above types plus `IDictionary`)
  
-If an object not in the above list is somewhere in the object graph, it will be treated as binary data. Such objects must be marked `Serializable` or implement `ISerializable`.
+If an object not in the above list is somewhere in the object graph, it will be treated as binary data. Such objects must be marked `Serializable` or implement `ISerializable` or `IPlistSerializable`.
 
 ### Writing
 
@@ -88,6 +88,10 @@ As an example, a simple object might be implemented as follows:
     }
 
 With the above implementation in place, you can read and write instances of your objects directly using the appropriate reader/writer overloads.
+
+## Coming Soon
+
+I'm currently working on a `DataContractSerializer` implementation. Once complete, you'll be able to mark up your objects with the appropriate `DataContract`, `DataMember`, etc. attributes and serialize/de-serialize them directly. 
     
 ## License
 
