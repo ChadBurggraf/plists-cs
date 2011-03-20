@@ -414,7 +414,7 @@ namespace System.Runtime.Serialization.Plists
 
             if (value != null)
             {
-                type = value.GetType();
+                type = value.GetType().GetConcreteTypeIfNullable();
                 typeCode = Type.GetTypeCode(type);
             }
             

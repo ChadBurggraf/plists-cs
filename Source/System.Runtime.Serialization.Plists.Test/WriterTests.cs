@@ -14,7 +14,7 @@ namespace System.Runtime.Serialization.Plists.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
-    /// Unit tests for binary plist writing.
+    /// Binary plist writer tests.
     /// </summary>
     [TestClass]
     public class WriterTests

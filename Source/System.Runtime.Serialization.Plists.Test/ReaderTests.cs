@@ -12,7 +12,7 @@ namespace System.Runtime.Serialization.Plists.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
-    /// Unit tests for binary plist serialization.
+    /// Binary plist reader tests.
     /// </summary>
     [TestClass]
     public class ReaderTests

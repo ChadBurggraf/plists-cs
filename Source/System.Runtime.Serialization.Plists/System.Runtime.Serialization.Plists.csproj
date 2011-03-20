@@ -52,10 +52,12 @@
     <Compile Include="BinaryPlistReader.cs" />
     <Compile Include="BinaryPlistWriter.cs" />
     <Compile Include="BinaryPlistItem.cs" />
+    <Compile Include="DataContractBinaryPlistSerializer.cs" />
     <Compile Include="EndianConverter.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IPlistSerializable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeCacheItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
