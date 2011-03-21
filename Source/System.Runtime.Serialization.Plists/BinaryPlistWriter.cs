@@ -500,6 +500,7 @@ namespace System.Runtime.Serialization.Plists
                     {
                         throw new InvalidOperationException("A type was found in the object table that is not serializable. Types that are natively serializable to a binary plist include: null, booleans, integers, floats, dates, strings, arrays and dictionaries. Any other types must be marked with a SerializableAttribute or implement ISerializable. The type that caused this exception to be thrown is: " + type.FullName);
                     }
+
                     break;
             }
 

@@ -43,6 +43,7 @@
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
+    <Compile Include="DataContractTests.cs" />
     <Compile Include="ExtensionTests.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="ReaderTests.cs" />

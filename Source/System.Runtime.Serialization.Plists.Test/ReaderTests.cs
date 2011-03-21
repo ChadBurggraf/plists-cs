@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="BinaryPlistTests.cs" company="Tasty Codes">
+// <copyright file="ReaderTests.cs" company="Tasty Codes">
 //     Copyright (c) 2011 Chad Burggraf.
 // </copyright>
 //-----------------------------------------------------------------------
