@@ -20,30 +20,38 @@ namespace System.Runtime.Serialization.Plists.Test
     public sealed class DataContractTests
     {
         /// <summary>
+        /// Read implicit contract tests.
+        /// </summary>
+        [TestMethod]
+        public void DataContractReadImplicitContract()
+        {
+            using (FileStream stream = File.OpenRead(WriteImplicitContractToFile()))
+            {
+                ImplicitContract obj = (ImplicitContract)new DataContractBinaryPlistSerializer(typeof(ImplicitContract)).ReadObject(stream);
+                Assert.IsNotNull(obj);
+                Assert.AreEqual(new DateTime(1982, 5, 28), obj.DateValue);
+                Assert.IsNotNull(obj.ListValue);
+                Assert.AreEqual(3, obj.ListValue.Count);
+                Assert.AreEqual("One", obj.ListValue[0]);
+                Assert.AreEqual("Two", obj.ListValue[1]);
+                Assert.AreEqual("Three", obj.ListValue[2]);
+                Assert.IsNotNull(obj.InnerContractValue);
+                Assert.AreEqual(new DateTime(2001, 1, 1), obj.InnerContractValue.DateValue);
+                Assert.IsNull(obj.InnerContractValue.InnerContractValue);
+                Assert.AreEqual(3, obj.InnerContractValue.ListValue.Count);
+                Assert.AreEqual("Four", obj.InnerContractValue.ListValue[0]);
+                Assert.AreEqual("Five", obj.InnerContractValue.ListValue[1]);
+                Assert.AreEqual("Six", obj.InnerContractValue.ListValue[2]);
+            }
+        }
+
+        /// <summary>
         /// Write implicit contract tests.
         /// </summary>
         [TestMethod]
         public void DataContractWriteImplicitContract()
         {
-            string outputPath = Guid.NewGuid().ToString() + ".plist";
-            
-            ImplicitContract obj = new ImplicitContract()
-            {
-                DateValue = new DateTime(1982, 5, 28),
-                ListValue = new List<string>(new string[] { "One", "Two", "Three" }),
-                InnerContractValue = new ImplicitContract()
-                {
-                    DateValue = new DateTime(2001, 1, 1),
-                    ListValue = new List<string>(new string[] { "Four", "Five", "Six" })
-                }
-            };
-
-            using (FileStream stream = File.Create(outputPath))
-            {
-                new DataContractBinaryPlistSerializer(typeof(ImplicitContract)).WriteObject(stream, obj);
-            }
-
-            IDictionary dict = new BinaryPlistReader().ReadObject(outputPath);
+            IDictionary dict = new BinaryPlistReader().ReadObject(WriteImplicitContractToFile());
             Assert.AreEqual(3, dict.Count);
             Assert.AreEqual(new DateTime(1982, 5, 28), dict["DateValue"]);
             Assert.IsInstanceOfType(dict["ListValue"], typeof(object[]));
@@ -61,29 +69,31 @@ namespace System.Runtime.Serialization.Plists.Test
             Assert.AreEqual("Six", ((object[])((IDictionary)dict["InnerContractValue"])["ListValue"])[2]);
         }
 
-        #region ImplicitContract Class
-
         /// <summary>
-        /// Implicit data contract test class.
+        /// Writes an exmample <see cref="ImplicitContract"/> object to a file as a binary plist.
         /// </summary>
-        private class ImplicitContract
+        /// <returns>The path of the file written.</returns>
+        private static string WriteImplicitContractToFile()
         {
-            /// <summary>
-            /// Gets or sets the date value.
-            /// </summary>
-            public DateTime DateValue { get; set; }
+            string outputPath = Guid.NewGuid().ToString() + ".plist";
 
-            /// <summary>
-            /// Gets or sets the list value.
-            /// </summary>
-            public IList<string> ListValue { get; set; }
+            ImplicitContract obj = new ImplicitContract()
+            {
+                DateValue = new DateTime(1982, 5, 28),
+                ListValue = new List<string>(new string[] { "One", "Two", "Three" }),
+                InnerContractValue = new ImplicitContract()
+                {
+                    DateValue = new DateTime(2001, 1, 1),
+                    ListValue = new List<string>(new string[] { "Four", "Five", "Six" })
+                }
+            };
 
-            /// <summary>
-            /// Gets or sets the inner contract value.
-            /// </summary>
-            public ImplicitContract InnerContractValue { get; set; }
+            using (FileStream stream = File.Create(outputPath))
+            {
+                new DataContractBinaryPlistSerializer(typeof(ImplicitContract)).WriteObject(stream, obj);
+            }
+
+            return outputPath;
         }
-
-        #endregion
     }
 }
