@@ -20,6 +20,8 @@ You can also build using the solution in Visual Studio 2008.
 
 ## Basic Usage
 
+You can use [WCF Data Contracts](http://msdn.microsoft.com/en-us/library/ms733127.aspx) to mark up model or business objects for plist serialization. See below for details and caveats. Continue reading this section for manual creation of plist-serializable dictionaries.
+
 There are two primary classes exposed by the assembly: `BinaryPlistReader` and `BinaryPlistWriter`. As their names imply, they read and write `IDictionary` objects to and from binary plists. The plist format specifies that the following types are supported:
 
  - `null`
@@ -89,9 +91,19 @@ As an example, a simple object might be implemented as follows:
 
 With the above implementation in place, you can read and write instances of your objects directly using the appropriate reader/writer overloads.
 
-## Coming Soon
+## Data Contracts
 
-I'm currently working on a `DataContractSerializer` implementation. Once complete, you'll be able to mark up your objects with the appropriate `DataContract`, `DataMember`, etc. attributes and serialize/de-serialize them directly. 
+A first-draft version of [WCF Data Contract](http://msdn.microsoft.com/en-us/library/ms733127.aspx) support is currently included. The behavior is very similar to that of the [DataContractSerializer](http://msdn.microsoft.com/en-us/library/system.runtime.serialization.datacontractserializer.aspx):
+
+ - If no `DataContract` is defined for an object, a default contract is inferred from all public read+write fields and properties.
+ - If a `DataContract` is defined, all read+write fields and properties marked as `DataMember`s are used, regardless of visibility.
+ - The root object **must** be a complex type or an `IDictionary` instance (i.e., an array or primitive type cannot be the root of the graph).
+ - `DataContractSerializer` does not require collections to implement `IList` formally; instead an informal protocol requiring an `Add` method is used. Right now, `DataContractBinaryPlistSerializer` requires an actual `IList` implementation or an array for collection objects. This may change in the future if there is any demand.
+ - This functionality has not been thoroughly tested. Please report bugs!
+ 
+The basic usage of `DataContractBinaryPlistSerializer` is almost identical to `DataContractSerializer`. One big difference is that it does not use `XmlReader` and `XmlWriter` under the covers. Therefore, there aren't any overloads for either the constor or the `ReadObject` and `WriteObject` methods.
+
+Binary plists are a very limited serialization format, so a number of `DataContract` features aren't supported and will be ignored (e.g., custom names and namespaces, member orders, etc.).
     
 ## License
 

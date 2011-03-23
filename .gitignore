@@ -1,6 +1,7 @@
 *.csproj.user
 *.suo
 *.snk
+.DS_Store
 StyleCop.Cache
 bin/
 obj/

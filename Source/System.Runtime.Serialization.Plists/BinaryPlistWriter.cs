@@ -170,7 +170,10 @@ namespace System.Runtime.Serialization.Plists
         private static void AddIntegerCount(IList<byte> buffer, int count)
         {
             byte[] countBuffer = GetIntegerBytes(count);
-            buffer.Add((byte)Math.Log(countBuffer.Length, 2));
+
+            // According to my inspection of the output of Property List Editor's .plist files,
+            // it is marking the most significant bit for some unknown reason. So we're marking it too.
+            buffer.Add((byte)((byte)Math.Log(countBuffer.Length, 2) | (byte)0x10));
 
             foreach (byte countByte in countBuffer)
             {
@@ -185,7 +188,9 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>A big-endian byte array.</returns>
         private static byte[] GetIntegerBytes(long value)
         {
-            if (value >= 0 && value < 255)
+            // See AddIntegerCount() for why this is restricting use
+            // of the most significant bit.
+            if (value >= 0 && value < 128)
             {
                 return new byte[] { (byte)value };
             }
