@@ -9,6 +9,7 @@ namespace System.Runtime.Serialization.Plists
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -18,6 +19,7 @@ namespace System.Runtime.Serialization.Plists
     /// <summary>
     /// Serializes data contracts to and from the binary plist format.
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
     public sealed class DataContractBinaryPlistSerializer
     {
         private Type rootType;
@@ -104,13 +106,12 @@ namespace System.Runtime.Serialization.Plists
         private object GetReadablePlistObject(Type type, object obj)
         {
             object result = null;
+            IDictionary plistDict = obj as IDictionary;
 
             if (obj != null)
             {
                 if (typeof(IPlistSerializable).IsAssignableFrom(type))
                 {
-                    IDictionary plistDict = obj as IDictionary;
-
                     if (plistDict != null)
                     {
                         IPlistSerializable serResult = (IPlistSerializable)Activator.CreateInstance(type);
@@ -119,8 +120,6 @@ namespace System.Runtime.Serialization.Plists
                 }
                 else if (typeof(IDictionary).IsAssignableFrom(type))
                 {
-                    IDictionary plistDict = obj as IDictionary;
-
                     if (plistDict != null)
                     {
                         Type keyType = typeof(object), valueType = typeof(object);
@@ -197,8 +196,6 @@ namespace System.Runtime.Serialization.Plists
                 }
                 else
                 {
-                    IDictionary plistDict = obj as IDictionary;
-
                     if (plistDict != null)
                     {
                         if (!this.typeCache.ContainsKey(type))
@@ -258,7 +255,7 @@ namespace System.Runtime.Serialization.Plists
                     IDictionary dict = obj as IDictionary;
                     Dictionary<object, object> resultDict = new Dictionary<object, object>();
 
-                    foreach (object key in dict)
+                    foreach (object key in dict.Keys)
                     {
                         object value = dict[key];
                         resultDict[this.GetWritablePlistObject(key.GetType(), key)] = this.GetWritablePlistObject(value.GetType(), value);

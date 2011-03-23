@@ -46,6 +46,7 @@ namespace System.Runtime.Serialization.Plists
 
         private List<BinaryPlistItem> objectTable;
         private List<long> offsetTable;
+        private UniqueValueCache uniques;
         private int objectTableSize, objectRefCount, objectRefSize, topLevelObjectOffset;
         private long maxObjectRefValue;
 
@@ -333,22 +334,28 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>The index of the added value.</returns>
         private int AddDate(DateTime value)
         {
-            int index = this.objectTable.Count;
-            byte[] buffer = BitConverter.GetBytes(value.ToUniversalTime().Subtract(ReferenceDate).TotalSeconds);
-
-            if (BitConverter.IsLittleEndian)
+            if (!this.uniques.Contains(value))
             {
-                Array.Reverse(buffer);
+                int index = this.objectTable.Count;
+                byte[] buffer = BitConverter.GetBytes(value.ToUniversalTime().Subtract(ReferenceDate).TotalSeconds);
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(buffer);
+                }
+
+                BinaryPlistItem item = new BinaryPlistItem(value);
+                item.Marker.Add((byte)0x33);
+                item.SetByteValue(buffer);
+
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
+
+                this.uniques.SetIndex(value, index);
+                return index;
             }
 
-            BinaryPlistItem item = new BinaryPlistItem(value);
-            item.Marker.Add((byte)0x33);
-            item.SetByteValue(buffer);
-
-            this.objectTable.Add(item);
-            this.objectTableSize += item.Size;
-
-            return index;
+            return this.uniques.GetIndex(value);
         }
 
         /// <summary>
@@ -388,22 +395,90 @@ namespace System.Runtime.Serialization.Plists
         }
 
         /// <summary>
+        /// Adds a double to the internal object table.
+        /// </summary>
+        /// <param name="value">The value to add.</param>
+        /// <returns>The index of the added value.</returns>
+        private int AddDouble(double value)
+        {
+            if (!this.uniques.Contains(value))
+            {
+                int index = this.objectTable.Count;
+                byte[] buffer = BitConverter.GetBytes(value);
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(buffer);
+                }
+
+                BinaryPlistItem item = new BinaryPlistItem(value);
+                item.Marker.Add((byte)((byte)0x20 | (byte)Math.Log(buffer.Length, 2)));
+                item.SetByteValue(buffer);
+
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
+
+                this.uniques.SetIndex(value, index);
+                return index;
+            }
+
+            return this.uniques.GetIndex(value);
+        }
+
+        /// <summary>
+        /// Adds a float to the internal object table.
+        /// </summary>
+        /// <param name="value">The value to add.</param>
+        /// <returns>The index of the added value.</returns>
+        private int AddFloat(float value)
+        {
+            if (!this.uniques.Contains(value))
+            {
+                int index = this.objectTable.Count;
+                byte[] buffer = BitConverter.GetBytes(value);
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(buffer);
+                }
+
+                BinaryPlistItem item = new BinaryPlistItem(value);
+                item.Marker.Add((byte)((byte)0x20 | (byte)Math.Log(buffer.Length, 2)));
+                item.SetByteValue(buffer);
+
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
+
+                this.uniques.SetIndex(value, index);
+                return index;
+            }
+
+            return this.uniques.GetIndex(value);
+        }
+
+        /// <summary>
         /// Adds an integer to the internal object table.
         /// </summary>
         /// <param name="value">The value to add.</param>
         /// <returns>The index of the added value.</returns>
         private int AddInteger(long value)
         {
-            int index = this.objectTable.Count;
+            if (!this.uniques.Contains(value))
+            {
+                int index = this.objectTable.Count;
 
-            BinaryPlistItem item = new BinaryPlistItem(value);
-            item.SetByteValue(GetIntegerBytes(value));
-            item.Marker.Add((byte)((byte)0x10 | (byte)Math.Log(item.ByteValue.Count, 2)));
+                BinaryPlistItem item = new BinaryPlistItem(value);
+                item.SetByteValue(GetIntegerBytes(value));
+                item.Marker.Add((byte)((byte)0x10 | (byte)Math.Log(item.ByteValue.Count, 2)));
 
-            this.objectTable.Add(item);
-            this.objectTableSize += item.Size;
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
 
-            return index;
+                this.uniques.SetIndex(value, index);
+                return index;
+            }
+
+            return this.uniques.GetIndex(value);
         }
 
         /// <summary>
@@ -441,10 +516,10 @@ namespace System.Runtime.Serialization.Plists
                     index = this.AddPrimitive(null);
                     break;
                 case TypeCode.Decimal:
-                    index = this.AddReal((double)(decimal)value);
+                    index = this.AddDouble((double)(decimal)value);
                     break;
                 case TypeCode.Double:
-                    index = this.AddReal((double)value);
+                    index = this.AddDouble((double)value);
                     break;
                 case TypeCode.Empty:
                     index = this.AddPrimitive(null);
@@ -462,7 +537,7 @@ namespace System.Runtime.Serialization.Plists
                     index = this.AddInteger((long)(sbyte)value);
                     break;
                 case TypeCode.Single:
-                    index = this.AddReal((double)(float)value);
+                    index = this.AddFloat((float)value);
                     break;
                 case TypeCode.String:
                     index = this.AddString((string)value);
@@ -519,40 +594,25 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>The index of the added value.</returns>
         private int AddPrimitive(bool? value)
         {
-            int index = this.objectTable.Count;
-
-            BinaryPlistItem item = new BinaryPlistItem(value);
-            item.Marker.Add(value.HasValue ? (value.Value ? (byte)0x9 : (byte)0x8) : (byte)0);
-
-            this.objectTable.Add(item);
-            this.objectTableSize += item.Size;
-
-            return index;
-        }
-
-        /// <summary>
-        /// Adds a real to the internal object table.
-        /// </summary>
-        /// <param name="value">The value to add.</param>
-        /// <returns>The index of the added value.</returns>
-        private int AddReal(double value)
-        {
-            int index = this.objectTable.Count;
-            byte[] buffer = BitConverter.GetBytes(value);
-
-            if (BitConverter.IsLittleEndian)
+            if (!value.HasValue || !this.uniques.Contains(value.Value))
             {
-                Array.Reverse(buffer);
+                int index = this.objectTable.Count;
+
+                BinaryPlistItem item = new BinaryPlistItem(value);
+                item.Marker.Add(value.HasValue ? (value.Value ? (byte)0x9 : (byte)0x8) : (byte)0);
+
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
+
+                if (value.HasValue)
+                {
+                    this.uniques.SetIndex(value.Value, index);
+                }
+
+                return index;
             }
 
-            BinaryPlistItem item = new BinaryPlistItem(value);
-            item.Marker.Add((byte)((byte)0x20 | (byte)Math.Log(buffer.Length, 2)));
-            item.SetByteValue(buffer);
-
-            this.objectTable.Add(item);
-            this.objectTableSize += item.Size;
-
-            return index;
+            return this.uniques.GetIndex(value.Value);
         }
 
         /// <summary>
@@ -562,47 +622,53 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>The index of the added value.</returns>
         private int AddString(string value)
         {
-            int index = this.objectTable.Count;
-            bool ascii = value.IsAscii();
-            byte[] buffer;
-
-            BinaryPlistItem item = new BinaryPlistItem(value);
-
-            if (value.Length < 15)
+            if (!this.uniques.Contains(value))
             {
-                item.Marker.Add((byte)((byte)(ascii ? 0x50 : 0x60) | (byte)value.Length));
-            }
-            else
-            {
-                item.Marker.Add((byte)(ascii ? 0x5F : 0x6F));
-                AddIntegerCount(item.Marker, value.Length);
-            }
+                int index = this.objectTable.Count;
+                bool ascii = value.IsAscii();
+                byte[] buffer;
 
-            if (ascii)
-            {
-                buffer = Encoding.ASCII.GetBytes(value);
-            }
-            else
-            {
-                buffer = Encoding.Unicode.GetBytes(value);
+                BinaryPlistItem item = new BinaryPlistItem(value);
 
-                if (BitConverter.IsLittleEndian)
+                if (value.Length < 15)
                 {
-                    for (int i = 0; i < buffer.Length; i++)
+                    item.Marker.Add((byte)((byte)(ascii ? 0x50 : 0x60) | (byte)value.Length));
+                }
+                else
+                {
+                    item.Marker.Add((byte)(ascii ? 0x5F : 0x6F));
+                    AddIntegerCount(item.Marker, value.Length);
+                }
+
+                if (ascii)
+                {
+                    buffer = Encoding.ASCII.GetBytes(value);
+                }
+                else
+                {
+                    buffer = Encoding.Unicode.GetBytes(value);
+
+                    if (BitConverter.IsLittleEndian)
                     {
-                        byte l = buffer[i];
-                        buffer[i] = buffer[++i];
-                        buffer[i] = l;
+                        for (int i = 0; i < buffer.Length; i++)
+                        {
+                            byte l = buffer[i];
+                            buffer[i] = buffer[++i];
+                            buffer[i] = l;
+                        }
                     }
                 }
+
+                item.SetByteValue(buffer);
+
+                this.objectTable.Add(item);
+                this.objectTableSize += item.Size;
+
+                this.uniques.SetIndex(value, index);
+                return index;
             }
 
-            item.SetByteValue(buffer);
-
-            this.objectTable.Add(item);
-            this.objectTableSize += item.Size;
-
-            return index;
+            return this.uniques.GetIndex(value);
         }
 
         /// <summary>
@@ -649,6 +715,7 @@ namespace System.Runtime.Serialization.Plists
 
             this.objectTable = new List<BinaryPlistItem>();
             this.offsetTable = new List<long>();
+            this.uniques = new UniqueValueCache();
         }
 
         /// <summary>

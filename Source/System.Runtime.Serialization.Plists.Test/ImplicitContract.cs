@@ -1,4 +1,8 @@
-﻿
+﻿//-----------------------------------------------------------------------
+// <copyright file="ImplicitContract.cs" company="Tasty Codes">
+//     Copyright (c) 2011 Chad Burggraf.
+// </copyright>
+//-----------------------------------------------------------------------
 
 namespace System.Runtime.Serialization.Plists.Test
 {
