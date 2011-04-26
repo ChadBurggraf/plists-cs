@@ -263,11 +263,11 @@ namespace System.Runtime.Serialization.Plists
                 case 1:
                     return (long)buffer[0];
                 case 2:
-                    return (long)BitConverter.ToInt16(buffer, 0);
+                    return (long)BitConverter.ToUInt16(buffer, 0);
                 case 4:
-                    return (long)BitConverter.ToInt32(buffer, 0);
+                    return (long)BitConverter.ToUInt32(buffer, 0);
                 case 8:
-                    return (long)BitConverter.ToInt64(buffer, 0);
+                    return (long)BitConverter.ToUInt64(buffer, 0);
                 default:
                     throw new InvalidOperationException("Unsupported variable-length integer size: " + size);
             }
