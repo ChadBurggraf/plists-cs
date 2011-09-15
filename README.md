@@ -5,7 +5,22 @@ Serialization.Plists is a binary plist reader/writer implementation for .NET. It
 
  - Serialization of opaque data or non plist-compatible objects will break plist editing in Property List Editor
  - Sets are treated as arrays
- 
+
+## Prerequisites to Building
+
+ - .NET Framework v3.5
+ - MSBuild v3.5
+ - StyleCop v4.5
+ - FxCop (either standalone, or auto-installed by Visual Studio 2010)
+
+The build scripts expect StyleCop and FxCop to be installed in their default locations. You can build without FxCop, but only by using the Visual Studio solution (StyleCop is required either way).
+
+If you'd like to create a signed build using your own signing key (I distribute signed assemblies; I recommend you just use those), run the following command from inside of the `Source\` directory:
+
+    sn -k System.Runtime.Serialization.Plists.snk
+    
+The build script will pick up this key automatically and sign the output assembly with it.
+
 ## Building
 
 You can build with MSBuild v3.5 from the command line:
@@ -33,7 +48,7 @@ There are two primary classes exposed by the assembly: `BinaryPlistReader` and `
  - `object[]` (arrays with members of any of the above types plus `object[]` and `IDictionary`)
  - `IDictionary` (dictionaries with members of any of the above types plus `IDictionary`)
  
-If an object not in the above list is somewhere in the object graph, it will be treated as binary data. Such objects must be marked `Serializable` or implement `ISerializable` or `IPlistSerializable`.
+If an object not in the above list is somewhere in the object graph, it will be treated as binary data. Such objects must be marked `Serializable` or implement `ISerializable` or `IPlistSerializable`. Byte arrays (`byte[]`) will be written un-modified.
 
 ### Writing
 
@@ -101,7 +116,7 @@ A first-draft version of [WCF Data Contract](http://msdn.microsoft.com/en-us/lib
  - `DataContractSerializer` does not require collections to implement `IList` formally; instead an informal protocol requiring an `Add` method is used. Right now, `DataContractBinaryPlistSerializer` requires an actual `IList` implementation or an array for collection objects. This may change in the future if there is any demand.
  - This functionality has not been thoroughly tested. Please report bugs!
  
-The basic usage of `DataContractBinaryPlistSerializer` is almost identical to `DataContractSerializer`. One big difference is that it does not use `XmlReader` and `XmlWriter` under the covers. Therefore, there aren't any overloads for either the constor or the `ReadObject` and `WriteObject` methods.
+The basic usage of `DataContractBinaryPlistSerializer` is almost identical to `DataContractSerializer`. One big difference is that it does not use `XmlReader` and `XmlWriter` under the covers. Therefore, there aren't any overloads for either the constructor or the `ReadObject` and `WriteObject` methods.
 
 Binary plists are a very limited serialization format, so a number of `DataContract` features aren't supported and will be ignored (e.g., custom names and namespaces, member orders, etc.).
     
