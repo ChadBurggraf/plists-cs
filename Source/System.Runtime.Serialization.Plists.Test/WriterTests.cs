@@ -28,7 +28,7 @@ namespace System.Runtime.Serialization.Plists.Test
             string outputPath = Guid.NewGuid().ToString() + ".plist";
             
             IDictionary dict = new Dictionary<string, object>();
-            dict["Empty"] = String.Empty;
+            dict["Empty"] = string.Empty;
 
             BinaryPlistWriter writer = new BinaryPlistWriter();
             writer.WriteObject(outputPath, dict);
@@ -37,7 +37,7 @@ namespace System.Runtime.Serialization.Plists.Test
             dict = reader.ReadObject(outputPath);
 
             Assert.IsTrue(dict.Contains("Empty"));
-            Assert.AreEqual(String.Empty, dict["Empty"]);
+            Assert.AreEqual(string.Empty, dict["Empty"]);
         }
 
         /// <summary>

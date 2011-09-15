@@ -205,7 +205,7 @@ namespace System.Runtime.Serialization.Plists
         private static string ReadAsciiString(BinaryReader reader, long index, int size)
         {
             byte[] buffer = ReadData(reader, index, size);
-            return buffer.Length > 0 ? Encoding.ASCII.GetString(buffer) : String.Empty;
+            return buffer.Length > 0 ? Encoding.ASCII.GetString(buffer) : string.Empty;
         }
 
         /// <summary>

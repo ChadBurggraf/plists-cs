@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="FxCop" AssemblyFile="Tools\FxCopTask\FxCopTask.dll"/>
+  
   <PropertyGroup>
+    <ArtifactDir>$(MSBuildProjectDirectory)\Artifacts</ArtifactDir>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <BuildDir>$(MSBuildProjectDirectory)\Build</BuildDir>
     <KeyFile>$(MSBuildProjectDirectory)\Source\System.Runtime.Serialization.Plists.snk</KeyFile>
     <LibraryDir>$(MSBuildProjectDirectory)\Source\System.Runtime.Serialization.Plists</LibraryDir>
+    <MsTestPath>$(MSBuildExtensionsPath32)\..\Microsoft Visual Studio 9.0\Common7\IDE\MSTest.exe</MsTestPath>
+    <TestDir>$(MSBuildProjectDirectory)\Source\System.Runtime.Serialization.Plists.Test</TestDir>
   </PropertyGroup>
 
   <Choose>
@@ -22,12 +27,25 @@
   </Choose>
 
   <ItemGroup>
-    <Projects Include="$(LibraryDir)\System.Runtime.Serialization.Plists.csproj"/>
+    <CompileProjects Include="$(LibraryDir)\System.Runtime.Serialization.Plists.csproj"/>
+    <CompileProjects Include="$(TestDir)\System.Runtime.Serialization.Plists.Test.csproj" Condition="'$(Configuration)' == 'Debug'"/>
   </ItemGroup>
 
-  <Target Name="Build" DependsOnTargets="Clean">
+  <Target Name="Clean">
+    <MSBuild Projects="@(CompileProjects)" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+  </Target>
+
+  <Target Name="CleanAll" DependsOnTargets="Clean">
+    <RemoveDir Directories="$(ArtifactDir)"/>
+    <RemoveDir Directories="$(BuildDir)"/>
+  </Target>
+
+  <Target Name="Compile">
+    <MSBuild Projects="@(CompileProjects)" Properties="Configuration=$(Configuration);SignAssembly=$(SignAssembly);AssemblyOriginatorKeyFile=$(KeyFile)"/>
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="CodeAnalysis;Compile">
     <MakeDir Directories="$(BuildDir)"/>
-    <MSBuild Projects="@(Projects)" Properties="Configuration=$(Configuration);SignAssembly=$(SignAssembly);AssemblyOriginatorKeyFile=$(KeyFile)"/>
 
     <ItemGroup>
       <ReleaseFiles Include="$(LibraryDir)\bin\$(Configuration)\System.Runtime.Serialization.Plists.dll"/>
@@ -43,5 +61,27 @@
   <Target Name="Clean">
     <RemoveDir Directories="$(BuildDir)"/>
     <MSBuild Projects="@(Projects)" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+  </Target>
+
+  <Target Name="CodeAnalysis">
+    <CallTarget Targets="FxCop"/>
+    <CallTarget Targets="Test"/>
+  </Target>
+
+  <Target Name="FxCop" DependsOnTargets="Compile">
+    <ItemGroup>
+      <FxCopAssemblies Include="$(LibraryDir)\System.Runtime.Serialization.Plists\bin\$(Configuration)\System.Runtime.Serialization.Plists.dll"/>
+      <FxCopAssemblies Include="$(TestDir)\System.Runtime.Serialization.Plists.Test\bin\$(Configuration)\System.Runtime.Serialization.Plists.Test.dll"/>
+    </ItemGroup>
+
+    <MakeDir Directories="$(ArtifactDir)"/>
+    <FxCop Assemblies="@(FxCopAssemblies)" Output="$(ArtifactDir)\FxCop.xml"/>
+  </Target>
+
+  <Target Name="Test" Condition="Exists('$(MsTestPath)')">
+    <MakeDir Directories="$(ArtifactDir)"/>
+    <Delete Files="$(ArtifactDir)\Tests.trx"/>
+    <MSBuild Projects="$(TestDir)\System.Runtime.Serialization.Plists.Test.csproj" Properties="Configuration=Debug"/>
+    <Exec Command='"$(MsTestPath)" /testcontainer:"$(TestDir)\bin\Debug\System.Runtime.Serialization.Plists.Test.dll" /runconfig:"$(MSBuildProjectDirectory)\Source\LocalTestRun.testrunconfig" /resultsfile:"$(ArtifactDir)\Tests.trx"'/>
   </Target>
 </Project>

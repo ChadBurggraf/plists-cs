@@ -33,6 +33,12 @@ namespace System.Runtime.Serialization.Plists.Test
         public const string ProfilePlistPath = "Profile.plist";
 
         /// <summary>
+        /// Gets the path of the profile 2 plist file.
+        /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
+        public const string Profile2PlistPath = "Profile2.plist";
+
+        /// <summary>
         /// Gets the path of the types plist file.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]

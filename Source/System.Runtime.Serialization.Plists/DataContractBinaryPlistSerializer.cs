@@ -84,7 +84,7 @@ namespace System.Runtime.Serialization.Plists
 
             if (!this.rootType.IsAssignableFrom(type))
             {
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The object specified is of type {0}, which is not assignable to this instance's root type, {1}.", type, this.rootType));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The object specified is of type {0}, which is not assignable to this instance's root type, {1}.", type, this.rootType));
             }
 
             IDictionary dict = this.GetWritablePlistObject(type, graph) as IDictionary;

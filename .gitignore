@@ -3,6 +3,7 @@
 *.snk
 .DS_Store
 StyleCop.Cache
+Artifacts/
 bin/
 obj/
 Build/

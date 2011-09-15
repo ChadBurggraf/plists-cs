@@ -131,6 +131,8 @@ namespace System.Runtime.Serialization.Plists
             // Reset the state and then build the object table.
             this.Reset();
             this.AddDictionary(dictionary);
+
+            this.topLevelObjectOffset = 8;
             this.CalculateObjectRefSize();
 
             using (BinaryWriter writer = new BinaryWriter(stream))
@@ -140,7 +142,6 @@ namespace System.Runtime.Serialization.Plists
                 writer.Write(HeaderVersionNumber.ToBigEndianConditional());
 
                 // Write the object table.
-                this.topLevelObjectOffset = 8;
                 long offsetTableOffset = this.topLevelObjectOffset + this.WriteObjectTable(writer);
 
                 // Write the offset table.
@@ -195,11 +196,11 @@ namespace System.Runtime.Serialization.Plists
             {
                 return new byte[] { (byte)value };
             }
-            else if (value >= Int16.MinValue && value <= Int16.MaxValue)
+            else if (value >= short.MinValue && value <= short.MaxValue)
             {
                 return BitConverter.GetBytes(((short)value).ToBigEndianConditional());
             }
-            else if (value >= Int32.MinValue && value <= Int32.MaxValue)
+            else if (value >= int.MinValue && value <= int.MaxValue)
             {
                 return BitConverter.GetBytes(((int)value).ToBigEndianConditional());
             }
@@ -525,7 +526,7 @@ namespace System.Runtime.Serialization.Plists
                     index = this.AddPrimitive(null);
                     break;
                 case TypeCode.Int16:
-                    index = this.AddInteger((long)(int)value);
+                    index = this.AddInteger((long)(short)value);
                     break;
                 case TypeCode.Int32:
                     index = this.AddInteger((long)(int)value);
@@ -676,26 +677,26 @@ namespace System.Runtime.Serialization.Plists
         /// </summary>
         private void CalculateObjectRefSize()
         {
-            while (this.objectTableSize + (this.objectRefCount * this.objectRefSize) > this.maxObjectRefValue)
+            while (this.objectTableSize + this.topLevelObjectOffset + (this.objectRefCount * this.objectRefSize) > this.maxObjectRefValue)
             {
                 switch (this.objectRefSize)
                 {
                     case 1:
                         this.objectRefSize = 2;
-                        this.maxObjectRefValue = Int16.MaxValue;
+                        this.maxObjectRefValue = short.MaxValue;
                         break;
                     case 2:
                         this.objectRefSize = 4;
-                        this.maxObjectRefValue = Int32.MaxValue;
+                        this.maxObjectRefValue = int.MaxValue;
                         break;
                     case 4:
                         this.objectRefSize = 8;
-                        this.maxObjectRefValue = Int64.MaxValue;
+                        this.maxObjectRefValue = long.MaxValue;
                         break;
                     case 8:
                         break;
                     default:
-                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Failed to calculate the required object reference size with an object table size of {0} and an object reference count of {1}.", this.objectTableSize, this.objectRefCount));
+                        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Failed to calculate the required object reference size with an object table size of {0} and an object reference count of {1}.", this.objectTableSize, this.objectRefCount));
                 }
             }
         }

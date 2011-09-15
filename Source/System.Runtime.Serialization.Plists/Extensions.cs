@@ -42,7 +42,7 @@ namespace System.Runtime.Serialization.Plists
         /// <returns>True if the string contains only ASCII characters, false otherwise.</returns>
         public static bool IsAscii(this string value)
         {
-            if (!String.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 foreach (char c in value)
                 {

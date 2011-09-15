@@ -101,5 +101,59 @@ namespace System.Runtime.Serialization.Plists.Test
             Assert.AreEqual("World", dictionary["Hello"]);
             Assert.AreEqual(72, ((object[])dictionary["LongArray"]).Length);
         }
+
+        /// <summary>
+        /// Read Profile2.plist tests.
+        /// </summary>
+        [TestMethod]
+        public void ReaderReadProfile2()
+        {
+            BinaryPlistReader reader = new BinaryPlistReader();
+            IDictionary dictionary;
+
+            using (Stream stream = File.OpenRead(Paths.Profile2PlistPath))
+            {
+                dictionary = reader.ReadObject(stream);
+            }
+
+            Assert.AreEqual(2, dictionary.Count);
+
+            object[] disorders = (object[])dictionary["disorders"];
+            object[] educationLevels = (object[])dictionary["educationLevels"];
+
+            Assert.AreEqual(1, disorders.Length);
+            Assert.AreEqual(6, educationLevels.Length);
+
+            IDictionary obj = (IDictionary)disorders[0];
+            Assert.AreEqual((short)1, obj["id"]);
+            Assert.AreEqual(false, obj["isAlias"]);
+            Assert.AreEqual("Autism", obj["name"]);
+            Assert.AreEqual((short)1, obj["order"]);
+
+            obj = (IDictionary)educationLevels[1];
+            Assert.AreEqual((short)2, obj["id"]);
+            Assert.AreEqual("Elementary School", obj["name"]);
+            Assert.AreEqual((short)2, obj["order"]);
+
+            obj = (IDictionary)educationLevels[2];
+            Assert.AreEqual((short)3, obj["id"]);
+            Assert.AreEqual("Middle School", obj["name"]);
+            Assert.AreEqual((short)3, obj["order"]);
+
+            obj = (IDictionary)educationLevels[3];
+            Assert.AreEqual((short)4, obj["id"]);
+            Assert.AreEqual("High School", obj["name"]);
+            Assert.AreEqual((short)4, obj["order"]);
+
+            obj = (IDictionary)educationLevels[4];
+            Assert.AreEqual((short)5, obj["id"]);
+            Assert.AreEqual("Post High School", obj["name"]);
+            Assert.AreEqual((short)5, obj["order"]);
+
+            obj = (IDictionary)educationLevels[5];
+            Assert.AreEqual((short)6, obj["id"]);
+            Assert.AreEqual("Higher Education", obj["name"]);
+            Assert.AreEqual((short)6, obj["order"]); 
+        }
     }
 }

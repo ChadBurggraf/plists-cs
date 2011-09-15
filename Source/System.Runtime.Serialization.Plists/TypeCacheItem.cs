@@ -88,7 +88,7 @@ namespace System.Runtime.Serialization.Plists
                         IsRequired = false
                     };
 
-                member.Name = !String.IsNullOrEmpty(member.Name) ? member.Name : tuple.Info.Name;
+                member.Name = !string.IsNullOrEmpty(member.Name) ? member.Name : tuple.Info.Name;
 
                 this.FieldMembers.Add(member);
                 this.Fields.Add(tuple.Info);
@@ -127,7 +127,7 @@ namespace System.Runtime.Serialization.Plists
                         IsRequired = false
                     };
 
-                member.Name = !String.IsNullOrEmpty(member.Name) ? member.Name : tuple.Info.Name;
+                member.Name = !string.IsNullOrEmpty(member.Name) ? member.Name : tuple.Info.Name;
 
                 this.PropertyMembers.Add(member);
                 this.Properties.Add(tuple.Info);
