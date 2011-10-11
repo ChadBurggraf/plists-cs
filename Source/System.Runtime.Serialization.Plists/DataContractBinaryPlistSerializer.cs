@@ -70,6 +70,17 @@ namespace System.Runtime.Serialization.Plists
         /// <param name="graph">The object to write.</param>
         public void WriteObject(Stream stream, object graph)
         {
+            this.WriteObject(stream, graph, true);
+        }
+
+        /// <summary>
+        /// Writes the complete contents of the given object to the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="graph">The object to write.</param>
+        /// <param name="closeStream">A value indicating whether to close the stream after the write operation completes.</param>
+        public void WriteObject(Stream stream, object graph, bool closeStream)
+        {
             if (stream == null)
             {
                 throw new ArgumentNullException("stream", "stream cannot be null.");
@@ -94,7 +105,7 @@ namespace System.Runtime.Serialization.Plists
                 throw new ArgumentException("The root object must be assignable to IDictionary, a complex type with an explicit or implied data contract, or assignable to IPlistSerializable.", "graph");
             }
 
-            new BinaryPlistWriter().WriteObject(stream, dict);
+            new BinaryPlistWriter().WriteObject(stream, dict, closeStream);
         }
 
         /// <summary>

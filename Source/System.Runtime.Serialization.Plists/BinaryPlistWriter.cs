@@ -85,12 +85,23 @@ namespace System.Runtime.Serialization.Plists
         /// <param name="obj">The <see cref="IPlistSerializable"/> object to write.</param>
         public void WriteObject(Stream stream, IPlistSerializable obj)
         {
+            this.WriteObject(stream, obj, true);
+        }
+
+        /// <summary>
+        /// Writes the specified <see cref="IPlistSerializable"/> object to the given stream as a binary plist.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="obj">The <see cref="IPlistSerializable"/> object to write.</param>
+        /// <param name="closeStream">A value indicating whether to close the stream after the write operation completes.</param>
+        public void WriteObject(Stream stream, IPlistSerializable obj, bool closeStream)
+        {
             if (obj == null)
             {
                 throw new ArgumentNullException("obj", "obj cannot be null.");
             }
 
-            this.WriteObject(stream, obj.ToPlistDictionary());
+            this.WriteObject(stream, obj.ToPlistDictionary(), closeStream);
         }
 
         /// <summary>
@@ -112,6 +123,17 @@ namespace System.Runtime.Serialization.Plists
         /// <param name="stream">The stream to write to.</param>
         /// <param name="dictionary">The <see cref="IDictionary"/> object to write.</param>
         public void WriteObject(Stream stream, IDictionary dictionary)
+        {
+            this.WriteObject(stream, dictionary, true);
+        }
+
+        /// <summary>
+        /// Writes the specified <see cref="IDictionary"/> object to the given stream as a binary plist.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="dictionary">The <see cref="IDictionary"/> object to write.</param>
+        /// <param name="closeStream">A value indicating whether to close the stream after the write operation completes.</param>
+        public void WriteObject(Stream stream, IDictionary dictionary, bool closeStream)
         {
             if (stream == null)
             {
@@ -135,7 +157,9 @@ namespace System.Runtime.Serialization.Plists
             this.topLevelObjectOffset = 8;
             this.CalculateObjectRefSize();
 
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            BinaryWriter writer = new BinaryWriter(stream);
+
+            try
             {
                 // Write the header.
                 writer.Write(HeaderMagicNumber.ToBigEndianConditional());
@@ -157,6 +181,15 @@ namespace System.Runtime.Serialization.Plists
                 writer.Write(((long)this.objectTable.Count).ToBigEndianConditional());
                 writer.Write((long)0);
                 writer.Write(offsetTableOffset.ToBigEndianConditional());
+            }
+            finally
+            {
+                writer.Flush();
+
+                if (closeStream)
+                {
+                    writer.Close();
+                }
             }
         }
 
