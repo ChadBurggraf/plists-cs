@@ -10,7 +10,7 @@ Serialization.Plists is a binary plist reader/writer implementation for .NET. It
 
  - .NET Framework v3.5
  - MSBuild v3.5
- - StyleCop v4.5
+ - StyleCop v4.7
  - FxCop (either standalone, or auto-installed by Visual Studio 2010)
 
 The build scripts expect StyleCop and FxCop to be installed in their default locations. You can build without FxCop, but only by using the Visual Studio solution (StyleCop is required either way).
