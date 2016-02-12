@@ -70,7 +70,7 @@ namespace System.Runtime.Serialization.Plists.Test
         }
 
         /// <summary>
-        /// Writes an exmample <see cref="ImplicitContract"/> object to a file as a binary plist.
+        /// Writes an example <see cref="ImplicitContract"/> object to a file as a binary plist.
         /// </summary>
         /// <returns>The path of the file written.</returns>
         private static string WriteImplicitContractToFile()

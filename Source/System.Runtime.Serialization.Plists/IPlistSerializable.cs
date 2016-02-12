@@ -26,10 +26,10 @@ namespace System.Runtime.Serialization.Plists
         void FromPlistDictionary(IDictionary plist);
 
         /// <summary>
-        /// Gets a plist-friendly <see cref="IDictionary"/> representation of this instance.
+        /// Gets a plist friendly <see cref="IDictionary"/> representation of this instance.
         /// The returned dictionary may contain nested implementations of <see cref="IPlistSerializable"/>.
         /// </summary>
-        /// <returns>A plist-friendly <see cref="IDictionary"/> representation of this instance.</returns>
+        /// <returns>A plist friendly <see cref="IDictionary"/> representation of this instance.</returns>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "The spelling is correct.")]
         IDictionary ToPlistDictionary();
     }

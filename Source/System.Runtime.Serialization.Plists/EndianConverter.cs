@@ -138,7 +138,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -154,7 +154,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -170,7 +170,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -186,7 +186,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -202,7 +202,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -218,7 +218,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the big-endian value of the given value if the current system is little-endian.
-        /// If the curreng system is big-endian, returns the value as-is.
+        /// If the current system is big-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -234,7 +234,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -250,7 +250,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -266,7 +266,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -282,7 +282,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -298,7 +298,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>
@@ -314,7 +314,7 @@ namespace System.Runtime.Serialization.Plists
 
         /// <summary>
         /// Gets the little-endian value of the given value if the current system is big-endian.
-        /// If the curreng system is little-endian, returns the value as-is.
+        /// If the current system is little-endian, returns the value as-is.
         /// </summary>
         /// <param name="value">The value to swap if necessary.</param>
         /// <returns>The resulting value.</returns>

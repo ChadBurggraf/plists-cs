@@ -24,7 +24,7 @@ namespace System.Runtime.Serialization.Plists
         /// Initializes a new instance of the BinaryPlistDictionary class.
         /// </summary>
         /// <param name="objectTable">A reference to the binary plist's object table.</param>
-        /// <param name="size">The size of the dictionay.</param>
+        /// <param name="size">The size of the dictionary.</param>
         public BinaryPlistDictionary(IList<BinaryPlistItem> objectTable, int size)
         {
             this.KeyReference = new List<int>(size);

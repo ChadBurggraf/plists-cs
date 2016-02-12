@@ -309,7 +309,7 @@ namespace System.Runtime.Serialization.Plists
         /// Reads a floating-point value from the given reader, starting at the given index and of the given size.
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/> to read the floating-point value from.</param>
-        /// <param name="index">The index int he stream the floating-point value starts at.</param>
+        /// <param name="index">The index in the stream the floating-point value starts at.</param>
         /// <param name="size">The number of bytes that make up the floating-point value.</param>
         /// <returns>A floating-point value.</returns>
         private static double ReadReal(BinaryReader reader, long index, int size)

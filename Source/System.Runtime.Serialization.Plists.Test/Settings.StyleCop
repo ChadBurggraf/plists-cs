@@ -6,4 +6,12 @@
       </AnalyzerSettings>
     </Analyzer>
   </Analyzers>
+  <GlobalSettings>
+    <CollectionProperty Name="RecognizedWords">
+      <Value>enum</Value>
+      <Value>plist</Value>
+      <Value>plists</Value>
+      <Value>plist's</Value>
+    </CollectionProperty>
+  </GlobalSettings>
 </StyleCopSettings>
